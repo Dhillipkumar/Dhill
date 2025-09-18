@@ -30,3 +30,23 @@ def align_with_bq_schema(df, table_id):
             df[col] = pd.to_datetime(df[col], errors="coerce")
     
     return df
+
+
+# Read your CSV/Excel
+df = pd.read_csv("AWM Data.csv")   # or pd.read_excel("AWM Data.xlsx")
+
+# Table ID in BigQuery
+table_id = "your_project.your_dataset.fund_filters"
+
+# Align DataFrame with BigQuery schema
+df = align_with_bq_schema(df, table_id)
+
+# Verify datatypes
+print(df.dtypes)
+
+# Upload to BigQuery
+job_config = bigquery.LoadJobConfig(write_disposition="WRITE_APPEND")
+job = bigquery.Client().load_table_from_dataframe(df, table_id, job_config=job_config)
+job.result()
+
+print("✅ Data uploaded successfully.")
