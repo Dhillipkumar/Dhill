@@ -1,0 +1,32 @@
+import pandas as pd
+from google.cloud import bigquery
+
+def align_with_bq_schema(df, table_id):
+    client = bigquery.Client()
+    table = client.get_table(table_id)
+    
+    bq_schema = {field.name: field.field_type for field in table.schema}
+    
+    for col in df.columns:
+        if col not in bq_schema:
+            print(f"⚠️ Column '{col}' not in BigQuery schema (will be ignored).")
+            continue
+        
+        bq_type = bq_schema[col]
+        
+        if bq_type == "STRING":
+            df[col] = df[col].astype(str).where(df[col].notnull(), None)
+        
+        elif bq_type == "INTEGER":
+            df[col] = pd.to_numeric(df[col], errors="coerce").astype("Int64")
+        
+        elif bq_type == "FLOAT":
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+        
+        elif bq_type == "BOOLEAN":
+            df[col] = df[col].astype(bool).where(df[col].notnull(), None)
+        
+        elif bq_type in ["TIMESTAMP", "DATETIME", "DATE"]:
+            df[col] = pd.to_datetime(df[col], errors="coerce")
+    
+    return df
