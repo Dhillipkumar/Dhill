@@ -122,3 +122,11 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+
+
+"The rule expression must be a one-line valid Pandas expression using only input_df. 
+It must return a boolean mask (True/False values) that can be directly applied to filter input_df. 
+Do NOT use lambda functions, .apply, or create new variables. 
+Avoid using .str methods; instead, use input_df[column].notnull(), input_df[column] != '', etc. 
+Only return expressions that run correctly inside pd.eval."
