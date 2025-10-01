@@ -87,3 +87,38 @@ An attacker uploads a 100-page equity research report with a hidden instruction:
 🔵 Compliance-approved magic 🪄
 Explanation:
 This is Indirect Prompt Injection because the malicious instruction is hidden inside a large, seemingly legitimate financial document. The risk is that the LLM might process the hidden command along with the real request and accidentally expose restricted client information. In asset management, this could violate client confidentiality and compliance rules, making it a serious threat.
+
+
+
+st.markdown(
+    """
+    <style>
+    /* Main background */
+    .stApp {
+        background-color: #f8f9fa;
+    }
+    /* Input box styling */
+    .stTextInput>div>div>input {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 1px solid #ccc !important;
+        border-radius: 8px !important;
+        padding: 6px !important;
+    }
+    /* Button styling */
+    div.stButton > button {
+        background-color: #1f77b4;
+        color: white;
+        border-radius: 8px;
+        padding: 8px 16px;
+        border: none;
+        font-weight: bold;
+    }
+    div.stButton > button:hover {
+        background-color: #105080;
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
