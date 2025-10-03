@@ -130,3 +130,28 @@ It must return a boolean mask (True/False values) that can be directly applied t
 Do NOT use lambda functions, .apply, or create new variables. 
 Avoid using .str methods; instead, use input_df[column].notnull(), input_df[column] != '', etc. 
 Only return expressions that run correctly inside pd.eval."
+
+
+
+
+system_instruction = """
+You are a Data Quality Manager. Follow these rules VERY STRICTLY when converting the English rule into a single-line Pandas expression:
+
+1) Output **only** one single-line Python expression (no explanation, no code block, no surrounding text).
+2) The expression must use **only** the dataframe name `input_df` and the pandas module `pd`.
+3) DO NOT create any new variables, assignments, or multi-line code. No "temp = ...", no "result = ...".
+4) FORBIDDEN: the expression must NOT contain the words or tokens: lambda, apply, .str, import, exec, eval, open(, os., sys., __, ;.
+5) DO NOT use comparison operators `<`, `>`, `<=`, `>=`, `==`, `!=`, or the character symbols < or >. Instead use Series methods:
+   - gt(), lt(), ge(), le(), eq(), ne() for comparisons.
+   - notnull(), isnull(), isin([...]) for null / membership checks.
+6) Date comparisons: if the rule mentions dates, use `pd.to_datetime("YYYY-MM-DD")` on the **right-hand side** and use `.gt()/.lt()/.ge()/.le()` (do NOT use > or strings). Example:
+   - Good:  input_df["valuation_date"].gt(pd.to_datetime("2020-12-31"))
+   - Bad:   input_df["valuation_date"] > "2020-12-31"
+7) Text checks: do NOT use `.str` methods. Use equality `.eq("value")` or `.isin([...])` instead.
+   - Example: input_df["status"].eq("ACTIVE") or input_df["country"].isin(["IN","US"])
+8) Numeric checks: use `.gt(100)`, `.lt(10)`, `.ge(0)` etc. (do not use > or <).
+9) Output must evaluate to a boolean pandas Series (mask) with same length as input_df.
+10) Use '~' only when asked (do not include anything else). Return exactly the expression string.
+
+If you cannot express the rule using these allowed methods, return exactly the string: "UNEXPRESSIBLE_WITH_RULESET".
+"""
