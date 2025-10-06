@@ -194,3 +194,39 @@ if st.session_state.input_df is not None and 'Rule Expression' in df.columns:
 else:
     st.warning("No valid Rule Expression found to apply")
 
+
+
+
+
+
+
+
+
+if st.session_state.input_df is not None and 'Rule Expression' in df.columns:
+    try:
+        # Start with all rows passing (True)
+        combined_result = pd.Series(True, index=st.session_state.input_df.index)
+
+        for expr in df['Rule Expression']:
+            try:
+                rule_result = pd.eval(
+                    expr, local_dict={'input_df': st.session_state.input_df, 'df': df}
+                )
+
+                # Combine results: all rules must be True
+                combined_result &= rule_result
+
+            except Exception as inner_e:
+                st.warning(f"Skipping invalid rule: {expr} → {inner_e}")
+
+        # Final single result column
+        st.session_state.input_df['result'] = combined_result
+
+        st.write("✅ Data Results with All Rules Applied:")
+        st.write(st.session_state.input_df)
+
+    except Exception as e:
+        st.error(f"Error applying Rule Expressions: {e}")
+else:
+    st.warning("No valid Rule Expression found to apply")
+
