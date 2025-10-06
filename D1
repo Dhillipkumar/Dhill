@@ -155,3 +155,42 @@ You are a Data Quality Manager. Follow these rules VERY STRICTLY when converting
 
 If you cannot express the rule using these allowed methods, return exactly the string: "UNEXPRESSIBLE_WITH_RULESET".
 """
+
+
+
+
+
+new
+
+
+if len(lines) > 2:
+    header = [h.strip() for h in lines[0].split('~') if h.strip()]
+    data_rows = [
+        [cell.strip() for cell in line.split('~') if cell.strip()]
+        for line in lines[1:]  # Take all lines after header
+    ]
+    df = pd.DataFrame(data_rows, columns=header)
+else:
+    df = pd.DataFrame()
+
+
+
+
+
+if st.session_state.input_df is not None and 'Rule Expression' in df.columns:
+    try:
+        for i, expr in enumerate(df['Rule Expression'], start=1):
+            result_col = f"result_rule_{i}"
+            try:
+                st.session_state.input_df[result_col] = pd.eval(
+                    expr, local_dict={'input_df': st.session_state.input_df, 'df': df}
+                )
+            except Exception as inner_e:
+                st.session_state.input_df[result_col] = f"Error: {inner_e}"
+        st.write("✅ Data Results with All Checks Applied:")
+        st.write(st.session_state.input_df)
+    except Exception as e:
+        st.error(f"Error applying Rule Expressions: {e}")
+else:
+    st.warning("No valid Rule Expression found to apply")
+
