@@ -269,4 +269,240 @@ Follow these STRICT RULES when generating the Pandas expression:
      → Pandas Expression: input_df["status"].str.lower() == "active"
    - English Rule: "Show customers whose age is more than 30"
      → Pandas Expression: input_df["age"] > 30
-"""
+"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1️⃣ Introduction
+Script (what you can say):
+Good morning everyone.
+Today, I’ll be walking you through the concept of Mandate Look-Through Analysis — a process we use to understand the true underlying exposures within our investment portfolios, especially when they contain internal or pooled funds.
+In simpler terms, look-through means “looking inside a fund” to see exactly what instruments or securities it’s holding.
+Slide bullets:
+Mandate = investment portfolio or account
+Look-through = transparency into underlying holdings
+Goal: Understand what our clients actually hold at the instrument level
+💼 2️⃣ What Is a Mandate?
+Script:
+In our system, a mandate refers to an investment account or portfolio managed by the firm — for example, an institutional client or an internal investment entity.
+Each mandate invests in different instruments — equities, bonds, ETFs, and sometimes internal HSBC funds.
+Slide bullets:
+A mandate = client or internal portfolio
+Holds instruments such as:
+Direct securities (stocks/bonds)
+Internal funds (e.g., “HSBC Global Investment Funds…”)
+Data stored in mandate_and_holdings_esg_ratings table
+🔍 3️⃣ What Is Look-Through?
+Script:
+When a mandate invests in an internal fund, that fund itself holds other instruments.
+A look-through analysis “unpacks” those internal funds — showing what’s inside them.
+This ensures that when we calculate portfolio exposures — for example, to sectors, geographies, or ESG ratings — we are not just stopping at the fund level, but looking at its underlying securities.
+Slide bullets:
+Look-Through = tracing investments into sub-holdings
+Reveals true exposure of a portfolio
+Example:
+Mandate → invests in HSBC Global Investment Fund – US Dollar Bond
+That fund → holds 100+ bonds → those become the mandate’s indirect holdings
+⚙️ 4️⃣ How Does It Work Technically?
+Script:
+Technically, we start from the mandate holdings table and identify which instruments are internal funds.
+We do this by matching the ISIN from the mandate table with the FunShare class table.
+If an ISIN is present there, it’s an internal HSBC fund.
+We then use the Morningstar Fund Identifier from that table to fetch all sub-instruments from the Fund Holdings table.
+Finally, we multiply each sub-instrument’s weight by the fund’s holding weight in the mandate — giving us the true look-through exposure.
+Slide bullets:
+Step 1: Select all holdings from mandate_and_holdings_esg_ratings
+Step 2: Match ISINs with FunShare class → identify internal funds
+Step 3: Get Morningstar Fund Identifier
+Step 4: Join with Fund_Holdings table → extract sub-instruments
+Step 5: Multiply parent fund weight × sub-instrument weight
+→ derive look-through holding percentage
+📊 5️⃣ Example
+Script:
+For example, if the mandate has 0.27% invested in HSBC MSCI World ETF,
+and that ETF itself holds 50 securities, each weighted individually,
+we multiply each sub-holding’s percentage by 0.27%.
+The resulting values represent how much of each underlying instrument the mandate indirectly holds.
+Slide bullets:
+Mandate → HSBC MSCI World ETF = 0.27%
+ETF → holds:
+Apple 5%, Microsoft 4%, etc.
+Effective holdings:
+Apple = 0.27% × 5% = 0.0135%
+Microsoft = 0.27% × 4% = 0.0108%
+🧮 6️⃣ Reweighting Excluding Cash/Derivatives
+Script:
+We also reweight the holdings to exclude non-invested assets like cash or derivatives.
+This gives a clearer picture of the portfolio’s active exposures — by redistributing weights only among equity and bond positions.
+Slide bullets:
+Cash/Derivatives excluded (amg_instrument_type LIKE 'C%' or 'D%')
+Reweighted using:
+🧠 7️⃣ Benefits of Mandate Look-Through
+Script:
+The look-through view is extremely useful for risk and ESG analytics.
+It enables us to:
+Identify hidden exposures
+Improve transparency for regulators and clients
+Aggregate ESG or sector metrics accurately
+Avoid double counting of internal funds
+Slide bullets:
+True exposure across all instruments
+Regulatory transparency (SFDR, ESG)
+Enables portfolio-level ESG scoring
+Prevents duplication of internal funds
+🚀 8️⃣ Summary
+Script:
+To summarize — the mandate look-through process helps us:
+Start from top-level holdings,
+Identify internal funds,
+Expand them into sub-holdings,
+Recalculate the true weights,
+giving a complete, transparent view of what our mandates actually hold.
+
+
+
+
+
+
+
+
+1️⃣ Introduction — What Is Tail Risk?
+Script:
+After completing the look-through process, we also perform Tail Risk Analysis.
+Tail risk simply means the exposure a portfolio has to the riskiest securities — the ones that could cause large losses or ESG reputation issues.
+In our context, we use ESG scores, particularly MSCI and Sustainalytics metrics, to identify these risky holdings.
+Slide bullets:
+Tail Risk = exposure to the weakest or riskiest holdings
+Measured using ESG-related scores
+Objective: Flag holdings with poor sustainability or governance
+📊 2️⃣ Data Sources and Scores Used
+Script:
+We use ESG metrics from multiple providers — mainly MSCI and Sustainalytics.
+Each holding has scores like:
+MSCI W, E, S, G (for Weighted Average Key, Environment, Social, Governance)
+Sustainalytics Corporate and Government risk scores
+Based on certain threshold conditions, we tag a holding as “Tail Risk”.
+Slide bullets:
+MSCI Scores: WAK, E, S, G
+Sustainalytics Scores: Corporate Risk, Government Risk
+Both used to determine if a security should be flagged
+⚙️ 3️⃣ Tagging Rules (Tail Risk Conditions)
+Script:
+A holding is flagged as Tail Risk if any of the following conditions are true:
+1️⃣ MSCI WAK score is not blank and is less than its tolerance level
+2️⃣ MSCI E, S, or G scores are below specific thresholds (like < 1.4 or < 2.0)
+3️⃣ If the MSCI WAK score is blank but the Sustainalytics Corporate or Government score is high (greater than 30)
+4️⃣ Or if all these ESG scores are missing — meaning no data available, which itself represents uncertainty
+Slide bullets:
+Holding is flagged if:
+MSCI WAK < tolerance
+MSCI E/S/G below thresholds
+MSCI WAK blank but Sustainalytics score > 30
+All ESG scores blank → insufficient ESG coverage
+💡 4️⃣ How Tail Risk Exposure Is Calculated
+Script:
+Once we tag all the risky holdings, we calculate their Tail Risk Exposure.
+We do this by summing up the reweighted, ex-cash weights of all flagged securities within the portfolio.
+This gives us the percentage of the fund exposed to “tail risk” securities.
+Slide bullets:
+Step 1: Flag holdings using ESG thresholds
+Step 2: Remove cash and derivatives (ex-cash view)
+Step 3: Sum reweighted weights of flagged holdings
+Result = Tail Risk Exposure % of the fund
+📘 5️⃣ Example Calculation
+Instrument
+Type
+MSCI W
+MSCI E
+MSCI S
+MSCI G
+Sustainalytics
+Weight
+Reweighted Weight
+Flagged?
+T
+Equity
+null
+null
+null
+null
+null
+10%
+14.29%
+✅
+U
+Equity
+1
+4
+4
+5
+20
+10%
+14.29%
+✅
+V
+Equity
+3
+2
+4
+1
+20
+5%
+7.14%
+✅
+W
+Derivative
+5
+4
+4
+4
+10
+15%
+21.43%
+❌
+Y
+Cash
+null
+null
+null
+null
+35
+15%
+21.43%
+❌
+Script:
+In this example, after excluding cash and derivatives, we’re left with 70% of covered weight.
+Out of that, 57.15% of holdings were flagged as tail risk — meaning more than half the portfolio’s investable exposure lies in securities with weak ESG performance.
+Slide bullets:
+Covered (non-cash) weight = 70%
+Flagged holdings = 57.15% of covered portion
+→ Tail Risk Exposure = 57.15%
+🎯 6️⃣ Why It Matters
+Script:
+This Tail Risk metric gives us a clear view of how much of our portfolio is vulnerable — not financially, but from an ESG risk perspective.
+It helps portfolio managers take pre-emptive action — either rebalance, reduce exposure, or engage with issuers to improve ESG performance.
+Slide bullets:
+Quantifies ESG vulnerability
+Supports portfolio-level ESG reporting
+Enables proactive risk mitigation
+Enhances client and regulatory transparency
+💬 7️⃣ Summary
+Script:
+To summarize:
+Mandate Look-Through → tells us what we truly hold.
+Tail Risk Exposure → tells us how risky or weak those holdings are from an ESG lens.
+Together, they give a complete picture of portfolio transparency and sustainability risk.
+
