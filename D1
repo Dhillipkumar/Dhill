@@ -506,3 +506,19 @@ Mandate Look-Through → tells us what we truly hold.
 Tail Risk Exposure → tells us how risky or weak those holdings are from an ESG lens.
 Together, they give a complete picture of portfolio transparency and sustainability risk.
 
+
+
+
+
+
+
+
+
+
+
+Let me explain how the data flows:
+First, we use CAM to fetch detailed account information.
+Then, IADS helps us retrieve the holdings associated with these accounts.
+iPaaS allows us to fetch detailed information for each holding, giving us a complete view of the instruments involved.
+Finally, we use ESG data to bring in the environmental, social, and governance scores for these instruments.
+By combining all these data sources, we are able to generate a unified dashboard that provides insights into ESG risks across holdings. Essentially, this dashboard allows us to see the ESG exposure at both the account and instrument levels, helping in better risk management and decision-making.”
