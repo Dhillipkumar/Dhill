@@ -1,7 +1,7 @@
 As part of the Aether project’s exploration of GCP Dataplex, this task involves creating a Confluence page documenting the setup and execution of Data Quality Scans, the types of built-in and recommended rules, key limitations, and a comparison with our custom data quality checks. The page will serve as a reference for understanding Dataplex capabilities and guiding future integration decisions.
 
 
-
+As part of enhancing the AI-powered Business Rule Processor (custom LLM-based rule creation module), this task involves implementing updates and refinements based on the feedback received from Raghul. The goal is to improve the rule generation logic, ensure better alignment with business requirements, and enhance the overall performance and accuracy of the LLM application.
 
 import pandas as pd
 from google.cloud import bigquery
