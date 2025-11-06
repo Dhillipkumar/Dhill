@@ -1,3 +1,8 @@
+As part of the Aether project’s exploration of GCP Dataplex, this task involves creating a Confluence page documenting the setup and execution of Data Quality Scans, the types of built-in and recommended rules, key limitations, and a comparison with our custom data quality checks. The page will serve as a reference for understanding Dataplex capabilities and guiding future integration decisions.
+
+
+
+
 import pandas as pd
 from google.cloud import bigquery
 
